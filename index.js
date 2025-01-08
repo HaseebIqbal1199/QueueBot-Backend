@@ -2,8 +2,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const authRoutes = require("./routes/auth");
-const geminiRoutes = require("./routes/gemini");
+const authRoutes = require("./routes/auth.js");
+const geminiRoutes = require("./routes/gemini.js");
 
 const app = express();
 

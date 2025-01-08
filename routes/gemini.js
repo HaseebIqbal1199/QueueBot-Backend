@@ -27,7 +27,7 @@ function authMiddleware(req, res, next) {
   }
 
   try {
-    const decoded = jwt.verify(token, "your_jwt_secret_key");
+    const decoded = jwt.verify(token, "fd4c362e0fca74321daf8105be244d91bbd2aba10710da72d5190ba840224158");
     req.user = decoded.userId;
     next();
   } catch (err) {
