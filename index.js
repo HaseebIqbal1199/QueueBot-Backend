@@ -1,35 +1,87 @@
 const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const bodyParser = require("body-parser");
-const authRoutes = require("./routes/auth.js");
-const geminiRoutes = require("./routes/gemini.js");
-
 const app = express();
+const cors = require("cors")
 
-// Middleware
-app.use(cors());
-app.use(bodyParser.json());
+//  Port
+const PORT = 3200;
 
-// MongoDB Connection
-const MONGO_URI = "mongodb+srv://sajidmehmood:O9qx22N7cG1u0uTk@cluster0.yhma3.mongodb.net/";
-mongoose
-.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-.then(() => console.log("Connected to MongoDB"))
-.catch((err) => console.error("MongoDB connection error:", err));
+// Cors
+app.use(cors())
 
-// Routes
-app.use("/auth", authRoutes);
+// History
+let History = [
+    {
+        role: "user",
+        parts: [{ text: "hi" }],
+    },
+    {
+        role: "model",
+        parts: [{ text: "Hi there! How can I help you today?\n" }],
+    },
+]
 
-// Default Route
-app.get("/", (req, res) => {
-  res.send("Welcome to the Authentication API!");
+// Gemini Configuration
+const {
+  GoogleGenerativeAI,
+  HarmCategory,
+  HarmBlockThreshold,
+} = require("@google/generative-ai");
+
+const apiKey = "AIzaSyCIguS-YbBV11IFJljEw6al3npiO0sBUT0";
+const genAI = new GoogleGenerativeAI(apiKey);
+
+const model = genAI.getGenerativeModel({
+  model: "gemini-1.5-flash",
 });
 
-// Start Server
-const PORT = 3200;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+const generationConfig = {
+  temperature: 1,
+  topP: 0.95,
+  topK: 40,
+  maxOutputTokens: 8192,
+  responseMimeType: "text/plain",
+};
 
+async function generateOutput(question) {
+  const chatSession = model.startChat({
+    generationConfig,
+    history: History
+  });
 
-// Add Gemini API Routes
-app.use("/gemini", geminiRoutes);
+  const result = await chatSession.sendMessage(question);
+  console.log(result.response.text());
+  return result.response.text()
+}
+
+// routers
+
+app.get('/',(req,res)=>{
+    res.send("An api for personal Chatbot made by Haseeb iqbal")
+})
+
+app.get("/queuebot", async (req, res) => {
+    try {
+        const question = req.query.question
+        console.log(question);
+        result = await generateOutput(question)
+        History.push(
+            {
+                role: "user",
+                parts: [{ text: question }],
+            },
+            {
+                role: "model",
+                parts: [{ text: result }],
+            }
+        )
+        res.send(result);
+    } catch (error) {
+        console.log(error);
+        res.send("An error occured!")  
+    }
+    
+});
+
+app.listen(PORT, () => {
+  console.log("Running at http://" + PORT);
+});
