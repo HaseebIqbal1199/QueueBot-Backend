@@ -12,8 +12,10 @@ const PORT = process.env.PORT || 3000;
 
 // Cors
 app.use(cors({
-  origin: '*'
-}))
+  origin: 'https://queuebotapp.vercel.app', // Allow requests from your frontend
+  methods: 'GET,POST', // Specify allowed HTTP methods
+  allowedHeaders: 'Content-Type,Authorization', // Specify allowed headers
+}));
 
 // History
 let History = [
